@@ -30,10 +30,10 @@ This will install the packages from the requirements.txt for this project.
 '''
 
 app = Flask(__name__)
+load_dotenv()
 app.config['SECRET_KEY'] = os.environ.get('secret_key')
 ckeditor = CKEditor(app)
 Bootstrap5(app)
-load_dotenv()
 
 OWN_EMAIL = os.environ.get('own_email')
 OWN_PASSWORD = os.environ.get('own_password')
