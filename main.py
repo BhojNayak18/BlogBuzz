@@ -103,7 +103,7 @@ class BlogPost(db.Model):
     img_url: Mapped[str] = mapped_column(String(250), nullable=False)
 
     # ***************Parent Relationship*************#
-    comments = relationship("Comment", back_populates="parent_post")
+    comments = relationship("Comment", back_populates="parent_post", cascade="all, delete-orphan")
 
 
 # New table for the database
@@ -119,7 +119,7 @@ class Comment(db.Model):
     comment_author = relationship("User", back_populates="comments")
 
     # ***************Child Relationship*************#
-    post_id: Mapped[str] = mapped_column(Integer, db.ForeignKey("blog_posts.id"))
+    post_id: Mapped[str] = mapped_column(Integer, db.ForeignKey("blog_posts.id", ondelete="CASCADE"))
     parent_post = relationship("BlogPost", back_populates="comments")
 
 
@@ -278,8 +278,13 @@ def edit_post(post_id):
 @admin_only
 def delete_post(post_id):
     post_to_delete = db.get_or_404(BlogPost, post_id)
-    db.session.delete(post_to_delete)
-    db.session.commit()
+    try:
+        db.session.delete(post_to_delete)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        flash(f"An error occurred while deleting the post: {e}")
+        return redirect(url_for('get_all_posts'))
     return redirect(url_for('get_all_posts'))
 
 
